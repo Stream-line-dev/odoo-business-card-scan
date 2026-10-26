@@ -1,0 +1,652 @@
+.o_bcs_scan {
+    --bcs-radius: 0.75rem;
+    --bcs-primary-soft: rgba($primary, 0.08);
+    --bcs-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06);
+    --bcs-shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.06), 0 10px 28px rgba(0, 0, 0, 0.1);
+
+    background-color: $o-webclient-background-color;
+
+    .o_bcs_panel {
+        max-width: 760px;
+    }
+
+    // En-tête
+    .o_bcs_logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        border-radius: var(--bcs-radius);
+        background: linear-gradient(135deg, $primary, rgba($primary, 0.7));
+        color: #fff;
+        font-size: 1.5rem;
+        box-shadow: 0 6px 16px rgba($primary, 0.3);
+    }
+
+    .o_bcs_title {
+        font-weight: 600;
+        letter-spacing: -0.01em;
+    }
+
+    .o_bcs_history {
+        border: 1px solid $border-color;
+        border-radius: 2rem;
+        background-color: $o-view-background-color;
+    }
+
+    // Zone de capture
+    .o_bcs_dropzone {
+        padding: 1rem;
+        border: 2px dashed transparent;
+        border-radius: calc(var(--bcs-radius) + 0.5rem);
+        transition: border-color 0.15s, background-color 0.15s;
+
+        &.o_bcs_dragging {
+            border-color: $primary;
+            background-color: var(--bcs-primary-soft);
+
+            .o_bcs_choice {
+                pointer-events: none;
+            }
+        }
+    }
+
+    .o_bcs_choice {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 2rem 1rem;
+        border: 1px solid $border-color;
+        border-radius: var(--bcs-radius);
+        background-color: $o-view-background-color;
+        color: $body-color;
+        box-shadow: var(--bcs-shadow);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+
+        &:hover {
+            transform: translateY(-2px);
+            border-color: rgba($primary, 0.5);
+            box-shadow: var(--bcs-shadow-hover);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+
+        &:focus-visible {
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba($primary, 0.3);
+        }
+    }
+
+    .o_bcs_choice_icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 64px;
+        margin-bottom: 0.5rem;
+        border-radius: 50%;
+        background-color: var(--bcs-primary-soft);
+        color: $primary;
+        font-size: 1.6rem;
+    }
+
+    .o_bcs_choice_label {
+        font-size: 1.05rem;
+        font-weight: 600;
+    }
+
+    .o_bcs_choice_hint {
+        font-size: 0.85rem;
+        color: $text-muted;
+    }
+
+    .o_bcs_choice_primary {
+        border-color: $primary;
+        background: linear-gradient(135deg, $primary, rgba($primary, 0.82));
+        color: #fff;
+
+        &:hover {
+            border-color: $primary;
+        }
+
+        .o_bcs_choice_icon {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .o_bcs_choice_hint {
+            color: rgba(255, 255, 255, 0.8);
+        }
+    }
+
+    // Webcam (ordinateur)
+    .o_bcs_camera {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 16 / 10;
+        border-radius: calc(var(--bcs-radius) + 0.25rem);
+        background-color: #0b0b0f;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+        color: #fff;
+        animation: o_bcs_fade_in 0.25s ease;
+
+        button {
+            color: inherit;
+        }
+    }
+
+    .o_bcs_camera_video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity 0.35s ease;
+    }
+
+    .o_bcs_camera_ready {
+        .o_bcs_camera_video,
+        .o_bcs_camera_frame {
+            opacity: 1;
+        }
+    }
+
+    .o_bcs_camera_loading {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 0.9rem;
+    }
+
+    // Repère au format carte de visite, le reste est assombri
+    .o_bcs_camera_frame {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 70%;
+        max-width: 520px;
+        aspect-ratio: 1.75;
+        transform: translate(-50%, -56%);
+        border-radius: 0.9rem;
+        box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5);
+        outline: 1px solid rgba(255, 255, 255, 0.25);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    // Coins façon viseur, avec une légère respiration
+    .o_bcs_corner {
+        --bcs-corner: 28px;
+        position: absolute;
+        width: var(--bcs-corner);
+        height: var(--bcs-corner);
+        border: 0 solid #fff;
+        animation: o_bcs_breathe 2s ease-in-out infinite;
+    }
+
+    .o_bcs_corner_tl {
+        top: -2px;
+        left: -2px;
+        border-top-width: 4px;
+        border-left-width: 4px;
+        border-top-left-radius: 0.9rem;
+    }
+
+    .o_bcs_corner_tr {
+        top: -2px;
+        right: -2px;
+        border-top-width: 4px;
+        border-right-width: 4px;
+        border-top-right-radius: 0.9rem;
+    }
+
+    .o_bcs_corner_bl {
+        bottom: -2px;
+        left: -2px;
+        border-bottom-width: 4px;
+        border-left-width: 4px;
+        border-bottom-left-radius: 0.9rem;
+    }
+
+    .o_bcs_corner_br {
+        right: -2px;
+        bottom: -2px;
+        border-right-width: 4px;
+        border-bottom-width: 4px;
+        border-bottom-right-radius: 0.9rem;
+    }
+
+    .o_bcs_camera_top {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+
+        .o_bcs_camera_icon_btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+    }
+
+    .o_bcs_camera_hint {
+        padding: 0.35rem 0.9rem;
+        border-radius: 2rem;
+        background-color: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(8px);
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+
+    .o_bcs_camera_icon_btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border: 0;
+        border-radius: 50%;
+        background-color: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(8px);
+        transition: background-color 0.15s ease;
+
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.65);
+        }
+    }
+
+    .o_bcs_camera_bar {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        padding: 2.5rem 1.5rem 1.25rem;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+    }
+
+    .o_bcs_camera_ghost {
+        justify-self: start;
+        padding: 0.4rem 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        border-radius: 2rem;
+        background-color: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(8px);
+        font-weight: 500;
+
+        &:hover {
+            border-color: rgba(255, 255, 255, 0.6);
+            background-color: rgba(255, 255, 255, 0.16);
+            color: #fff;
+        }
+    }
+
+    .o_bcs_camera_end {
+        justify-self: end;
+    }
+
+    // Déclencheur façon appareil photo
+    .o_bcs_shutter {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 72px;
+        height: 72px;
+        padding: 0;
+        border: 4px solid #fff;
+        border-radius: 50%;
+        background: transparent;
+
+        .o_bcs_shutter_inner {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background-color: #fff;
+            transition: transform 0.12s ease, background-color 0.15s ease;
+        }
+
+        &:hover .o_bcs_shutter_inner {
+            transform: scale(0.94);
+        }
+
+        &:active .o_bcs_shutter_inner {
+            transform: scale(0.82);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        &:disabled {
+            opacity: 0.4;
+        }
+
+        &:focus-visible {
+            outline: 0;
+            box-shadow: 0 0 0 0.3rem rgba($primary, 0.7);
+        }
+    }
+
+    .o_bcs_camera_flash {
+        position: absolute;
+        inset: 0;
+        background-color: #fff;
+        pointer-events: none;
+        animation: o_bcs_flash 0.25s ease-out forwards;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .o_bcs_corner,
+        .o_bcs_camera {
+            animation: none;
+        }
+    }
+
+    // Traitement en cours
+    .o_bcs_card {
+        padding: 1.25rem;
+        border: 1px solid $border-color;
+        border-radius: var(--bcs-radius);
+        background-color: $o-view-background-color;
+        box-shadow: var(--bcs-shadow);
+    }
+
+    .o_bcs_preview_wrap {
+        position: relative;
+        width: 180px;
+        aspect-ratio: 1.75;
+        overflow: hidden;
+        border-radius: 0.5rem;
+        background-color: $o-webclient-background-color;
+        border: 1px solid $border-color;
+    }
+
+    .o_bcs_preview {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .o_bcs_preview_placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: $text-muted;
+        font-size: 2rem;
+    }
+
+    .o_bcs_scanline {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: $primary;
+        box-shadow: 0 0 12px 2px rgba($primary, 0.6);
+        animation: o_bcs_scan 1.6s ease-in-out infinite alternate;
+    }
+
+    .o_bcs_progress {
+        height: 8px;
+        border-radius: 1rem;
+
+        .progress-bar {
+            border-radius: 1rem;
+            transition: width 0.3s ease;
+        }
+    }
+
+    .o_bcs_steps li {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: $text-muted;
+    }
+
+    .o_bcs_step_dot {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid $border-color;
+        font-size: 0.6rem;
+    }
+
+    .o_bcs_step_active {
+        color: $body-color;
+        font-weight: 600;
+
+        .o_bcs_step_dot {
+            border-color: $primary;
+            box-shadow: inset 0 0 0 3px $o-view-background-color;
+            background-color: $primary;
+        }
+    }
+
+    .o_bcs_step_done .o_bcs_step_dot {
+        border-color: $success;
+        background-color: $success;
+        color: #fff;
+    }
+
+    // Conseils
+    .o_bcs_tip {
+        display: flex;
+        gap: 0.75rem;
+        height: 100%;
+        padding: 0.9rem 1rem;
+        border-radius: var(--bcs-radius);
+        background-color: $o-view-background-color;
+        border: 1px solid $border-color;
+        font-size: 0.85rem;
+
+        > i {
+            margin-top: 0.15rem;
+            color: $primary;
+            font-size: 1.1rem;
+            width: 1.1rem;
+            text-align: center;
+        }
+
+        strong,
+        span {
+            display: block;
+        }
+
+        span {
+            color: $text-muted;
+        }
+    }
+
+    @include media-breakpoint-down(sm) {
+        .o_bcs_dropzone {
+            padding: 0;
+        }
+
+        .o_bcs_choice {
+            display: grid;
+            grid-template-columns: 48px 1fr;
+            column-gap: 1rem;
+            row-gap: 0;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            text-align: left;
+        }
+
+        .o_bcs_choice_icon {
+            grid-row: span 2;
+            width: 48px;
+            height: 48px;
+            margin-bottom: 0;
+            font-size: 1.25rem;
+        }
+
+        .o_bcs_preview_wrap {
+            width: 100%;
+        }
+    }
+}
+
+@keyframes o_bcs_breathe {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.55;
+    }
+}
+
+@keyframes o_bcs_flash {
+    from {
+        opacity: 0.9;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes o_bcs_fade_in {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes o_bcs_scan {
+    from {
+        top: 0;
+    }
+    to {
+        top: calc(100% - 3px);
+    }
+}
+
+// Cartes kanban
+.o_bcs_kanban .o_bcs_kanban_card {
+    overflow: hidden;
+    border-radius: 0.5rem;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+
+    &:hover {
+        border-color: rgba($primary, 0.4);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    }
+
+    // Miniature au format carte de visite (≈ 1.75:1)
+    .o_bcs_thumb {
+        width: 112px;
+        height: 64px;
+        overflow: hidden;
+        border: 1px solid $border-color;
+        border-radius: 0.375rem;
+        background-color: $o-webclient-background-color;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    .o_bcs_thumb_empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: $text-muted;
+        font-size: 1.5rem;
+        opacity: 0.6;
+    }
+
+    .o_bcs_kanban_name {
+        font-size: 1rem;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+
+    .o_bcs_kanban_meta li {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        min-width: 0;
+        font-size: 0.85rem;
+        line-height: 1.6;
+
+        > i {
+            flex-shrink: 0;
+            color: $text-muted;
+            opacity: 0.7;
+        }
+    }
+
+    .o_bcs_kanban_footer {
+        border-top: 1px solid $border-color;
+        background-color: rgba($o-webclient-background-color, 0.5);
+    }
+
+    // Statut : pastille douce plutôt qu'un badge plein
+    .o_bcs_status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.1rem 0.55rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+
+        .fa-circle {
+            font-size: 0.45rem;
+        }
+    }
+
+    .o_bcs_status_done {
+        background-color: rgba($success, 0.12);
+        color: darken($success, 10%);
+    }
+
+    .o_bcs_status_draft {
+        background-color: rgba($warning, 0.15);
+        color: darken($warning, 25%);
+    }
+}
+
+// Fiche de vérification
+.o_bcs_form {
+    .o_bcs_card_image {
+        .o_field_image {
+            display: block;
+            padding: 0.75rem;
+            border: 1px solid $border-color;
+            border-radius: 0.75rem;
+            background-color: $o-webclient-background-color;
+            text-align: center;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+    }
+}

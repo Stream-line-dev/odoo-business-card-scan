@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Formulaire de vérification -->
+    <record id="business_card_scan_view_form" model="ir.ui.view">
+        <field name="name">business.card.scan.form</field>
+        <field name="model">business.card.scan</field>
+        <field name="arch" type="xml">
+            <form string="Business Card" class="o_bcs_form">
+                <header>
+                    <button name="action_create_lead" type="object" string="Create Lead"
+                            icon="fa-check" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_reparse" type="object" string="Re-analyze Text"
+                            icon="fa-refresh" class="btn-secondary" invisible="state != 'draft'"
+                            confirm="Detected fields will be recomputed from the scanned text. Continue?"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_lead" type="object" class="oe_stat_button"
+                                icon="fa-star" invisible="not lead_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Lead</span>
+                                <span class="o_stat_text">Created</span>
+                            </div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Lead Created" invisible="state != 'done'"/>
+
+                    <div class="alert alert-warning d-flex flex-wrap align-items-center gap-2" role="alert"
+                         invisible="not duplicate_lead_id or state != 'draft'">
+                        <i class="fa fa-exclamation-triangle"/>
+                        <span>A lead already exists with this email:</span>
+                        <field name="duplicate_lead_id" readonly="1" class="fw-bold"/>
+                        <button name="action_open_duplicate" type="object" string="View"
+                                icon="fa-external-link" class="btn btn-sm btn-link ms-auto p-0"/>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-12 col-lg-5 o_bcs_card_image">
+                            <field name="image" widget="image" class="w-100" nolabel="1"
+                                   options="{'size': [0, 300]}"
+                                   readonly="state != 'draft'"/>
+                        </div>
+                        <div class="col-12 col-lg-7">
+                            <div class="oe_title mb-3">
+                                <label for="contact_name" string="Contact Name"/>
+                                <h1>
+                                    <field name="contact_name" placeholder="e.g. Jane Smith"
+                                           readonly="state != 'draft'"/>
+                                </h1>
+                                <h3 class="d-flex gap-2 text-muted fw-normal">
+                                    <field name="function" placeholder="Job Position" readonly="state != 'draft'"/>
+                                </h3>
+                            </div>
+                            <group>
+                                <field name="partner_name" placeholder="Company" readonly="state != 'draft'"/>
+                                <field name="email" widget="email" placeholder="name@company.com"
+                                       readonly="state != 'draft'"/>
+                                <field name="phone" widget="phone" readonly="state != 'draft'"/>
+                                <field name="phone_2" widget="phone" readonly="state != 'draft'"/>
+                                <field name="website" widget="url" placeholder="www.company.com"
+                                       readonly="state != 'draft'"/>
+                                <field name="street" readonly="state != 'draft'"/>
+                            </group>
+                        </div>
+                    </div>
+                    <notebook>
+                        <page string="Assignment" name="assignment">
+                            <group>
+                                <group>
+                                    <field name="user_id" widget="many2one_avatar_user"
+                                           readonly="state != 'draft'"/>
+                                    <field name="team_id" readonly="state != 'draft'"/>
+                                    <field name="tag_ids" widget="many2many_tags"
+                                           options="{'color_field': 'color'}" readonly="state != 'draft'"/>
+                                </group>
+                                <group>
+                                    <field name="partner_id" widget="res_partner_many2one"
+                                           readonly="state != 'draft'"/>
+                                    <field name="lead_id" invisible="not lead_id"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Other Information" name="notes">
+                            <field name="notes" placeholder="Unrecognized lines from the card..."
+                                   readonly="state != 'draft'"/>
+                        </page>
+                        <page string="Scanned Text (OCR)" name="raw_text">
+                            <field name="raw_text" class="font-monospace" readonly="state != 'draft'"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Historique -->
+    <record id="business_card_scan_view_list" model="ir.ui.view">
+        <field name="name">business.card.scan.list</field>
+        <field name="model">business.card.scan</field>
+        <field name="arch" type="xml">
+            <list string="Business Cards" decoration-muted="state == 'done'">
+                <field name="create_date" string="Scanned On" optional="show"/>
+                <field name="contact_name"/>
+                <field name="partner_name"/>
+                <field name="function" optional="hide"/>
+                <field name="email" widget="email"/>
+                <field name="phone" widget="phone" optional="show"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="lead_id" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-warning="state == 'draft'" decoration-success="state == 'done'"/>
+                <button name="action_create_lead" type="object" string="Create Lead"
+                        icon="fa-check" class="btn-link" invisible="state != 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="business_card_scan_view_kanban" model="ir.ui.view">
+        <field name="name">business.card.scan.kanban</field>
+        <field name="model">business.card.scan</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile o_bcs_kanban" sample="1">
+                <field name="state"/>
+                <field name="image_128"/>
+                <field name="function"/>
+                <field name="partner_name"/>
+                <field name="email"/>
+                <field name="phone"/>
+                <templates>
+                    <t t-name="card" class="o_bcs_kanban_card p-0">
+                        <div class="d-flex gap-3 p-3">
+                            <aside class="o_bcs_thumb flex-shrink-0">
+                                <field t-if="record.image_128.raw_value" name="image_128" widget="image"
+                                       options="{'size': [112, 64]}"/>
+                                <div t-else="" class="o_bcs_thumb_empty">
+                                    <i class="fa fa-id-card-o" title="No photo"/>
+                                </div>
+                            </aside>
+                            <main class="flex-grow-1 min-w-0">
+                                <field name="contact_name" class="o_bcs_kanban_name text-truncate"/>
+                                <div t-if="record.function.raw_value" class="small text-muted text-truncate">
+                                    <field name="function"/>
+                                </div>
+                                <ul class="o_bcs_kanban_meta list-unstyled mb-0 mt-2">
+                                    <li t-if="record.partner_name.raw_value">
+                                        <i class="fa fa-building-o fa-fw" title="Company"/>
+                                        <field name="partner_name" class="text-truncate"/>
+                                    </li>
+                                    <li t-if="record.email.raw_value">
+                                        <i class="fa fa-envelope-o fa-fw" title="Email"/>
+                                        <field name="email" class="text-truncate"/>
+                                    </li>
+                                    <li t-elif="record.phone.raw_value">
+                                        <i class="fa fa-phone fa-fw" title="Phone"/>
+                                        <field name="phone" class="text-truncate"/>
+                                    </li>
+                                </ul>
+                            </main>
+                        </div>
+                        <footer class="o_bcs_kanban_footer d-flex flex-wrap align-items-center gap-2 px-3 py-2 mt-0">
+                            <span t-if="record.state.raw_value === 'done'" class="o_bcs_status o_bcs_status_done">
+                                <i class="fa fa-check"/> Lead Created
+                            </span>
+                            <span t-else="" class="o_bcs_status o_bcs_status_draft">
+                                <i class="fa fa-circle"/> To Review
+                            </span>
+                            <field name="create_date" widget="date" class="small text-muted text-nowrap"/>
+                            <field name="user_id" widget="many2one_avatar_user" class="ms-auto"/>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="business_card_scan_view_search" model="ir.ui.view">
+        <field name="name">business.card.scan.search</field>
+        <field name="model">business.card.scan</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="contact_name"/>
+                <field name="partner_name"/>
+                <field name="email"/>
+                <filter name="filter_draft" string="To Review" domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_done" string="Lead Created" domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <filter name="filter_mine" string="My Scans" domain="[('user_id', '=', uid)]"/>
+                <group>
+                    <filter name="group_user" string="Salesperson" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="business_card_scan_action" model="ir.actions.act_window">
+        <field name="name">Scanned Cards</field>
+        <field name="res_model">business.card.scan</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="context">{'search_default_filter_mine': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No scanned cards yet</p>
+            <p>Use the <b>Scan</b> menu to take a photo of a business card:
+               details are detected automatically and you review them before creating the lead.</p>
+        </field>
+    </record>
+
+    <record id="business_card_scan_client_action" model="ir.actions.client">
+        <field name="name">Scan a Business Card</field>
+        <field name="tag">business_card_scan.scan</field>
+    </record>
+
+    <!-- Menus : application autonome "Business Cards" -->
+    <menuitem id="menu_business_card_root" name="Business Cards"
+              web_icon="business_card_scan,static/description/icon.png"
+              groups="sales_team.group_sale_salesman"
+              sequence="26"/>
+    <menuitem id="menu_business_card_scan" name="Scan"
+              parent="menu_business_card_root" action="business_card_scan_client_action" sequence="1"/>
+    <menuitem id="menu_business_card_history" name="Cards"
+              parent="menu_business_card_root" action="business_card_scan_action" sequence="2"/>
+
+</odoo>
